@@ -5,40 +5,30 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"strconv"
-	"unicode"
 )
 
 func main() {
-    file, err := os.Open("input.txt")
+	file, err := os.Open("input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
+	re := regexp.MustCompile(`\d`)
+
 	var calibration_values []string
 	for scanner.Scan() {
 		line := scanner.Text()
-		var firstNumber, lastNumber string
-		for i, ch := range line {
-			if unicode.IsDigit(ch) {
-				calibration_value := string(ch)
-				if firstNumber == "" {
-					firstNumber = calibration_value
-				}
-				lastNumber = calibration_value
-			}
-			
-			if i == len(line) - 1 {
-				if lastNumber != "" {
-					calibration_values = append(calibration_values, firstNumber+lastNumber)
-				}
-			}
-		}
+		digit_indexes := re.FindAllStringIndex(line, -1)
+		firstNumber := string(line[digit_indexes[0][0]])
+		lastNumber := string(line[digit_indexes[len(digit_indexes)-1][0]])
+		calibration_values = append(calibration_values, firstNumber+lastNumber)
 
-		if err := scanner.Err(); err != nil {
-			log.Fatal(err)
-		}
+	}
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
 	}
 
 	sum := 0
@@ -52,6 +42,4 @@ func main() {
 	}
 
 	fmt.Println(sum)
-
-	
 }
